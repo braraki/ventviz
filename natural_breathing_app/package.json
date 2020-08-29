@@ -1,0 +1,17 @@
+{
+  "name": "natural_breathing_app",
+  "version": "1.0.0",
+  "description": "natural breathing simulator",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Brandon Araki",
+  "license": "MIT",
+  "dependencies": {
+    "chart.js": "^2.9.3",
+    "express": "^4.17.1",
+    "odex": "^2.0.4",
+    "require": "^2.4.20"
+  }
+}

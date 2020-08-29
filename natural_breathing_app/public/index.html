@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Exploring Chart.js</title>
+
+</head>
+<style>
+    .container {
+        width: 50%;
+        height: 50%;
+    }
+
+    input[type=number] {
+      width: 3em;
+    }
+</style>
+<body>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridstack@1.1.2/dist/gridstack.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/gridstack@1.1.2/dist/gridstack.all.js"></script>
+
+  <div class="grid-stack">
+  <div class="grid-stack-item" data-gs-x="0" data-gs-y="0" data-gs-width="6" data-gs-height="12">
+    <div class="grid-stack-item-content">
+      <canvas id="volumeChart"></canvas>
+      <canvas id="flowChart"></canvas>
+      <canvas id="pressureChart"></canvas>
+      <div id="my_dataviz"></div>
+    </div>
+  </div>
+  <div class="grid-stack-item" data-gs-x="6" data-gs-y="0" data-gs-width="4" data-gs-height="4">
+    <div class="grid-stack-item-content">
+          <p> Compliance: </p>
+          <input type="number" id="complianceInput" value="140" min="0.01">
+
+          <p> Resistance: </p>
+          <input type="number" id="resistanceInput" value="4" min="0.01">
+    </div>
+  </div>
+
+  <script type="text/javascript">
+  var grid = GridStack.init();
+  </script>
+
+</div>
+
+
+</body>
+
+
+<script src="https://d3js.org/d3.v4.js"></script>
+<script src="C:\Users\brara\projects\ventilator\natural_breathing_app\node_modules\chart.js\dist\Chart.js"></script>
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script>var exports = {"__esModule": true};</script>
+<script src="C:\Users\brara\projects\ventilator\natural_breathing_app\node_modules\odex\src\odex.js"></script>
+<script src="./myChart.js"></script>
+
+</html>
