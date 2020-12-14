@@ -7,17 +7,28 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Exploring Chart.js</title>
 
-</head>
-<style>
-    .container {
-        width: 50%;
-        height: 50%;
-    }
+    <link href='https://fonts.googleapis.com/css?family=PT+Serif' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=PT+Sans' rel='stylesheet' type='text/css'>
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Condensed" rel="stylesheet">
 
-    input[type=number] {
-      width: 3em;
-    }
-</style>
+    <style>
+        .container {
+            width: 50%;
+            height: 50%;
+        }
+
+        text.textscrub {
+          font-family: "arial";
+          font-size: large;
+        }
+
+        input[type=number] {
+          width: 3em;
+        }
+    </style>
+
+</head>
+
 <body>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridstack@1.1.2/dist/gridstack.min.css" />
@@ -26,10 +37,12 @@
   <div class="grid-stack">
   <div class="grid-stack-item" data-gs-x="0" data-gs-y="0" data-gs-width="6" data-gs-height="12">
     <div class="grid-stack-item-content">
-      <canvas id="volumeChart"></canvas>
+      <!-- <canvas id="volumeChart"></canvas>
       <canvas id="flowChart"></canvas>
-      <canvas id="pressureChart"></canvas>
-      <div id="my_dataviz"></div>
+      <canvas id="pressureChart"></canvas> -->
+      <div id="volumeChart"></div>
+      <div id="flowChart"></div>
+      <div id="pressureChart"></div>
     </div>
   </div>
   <div class="grid-stack-item" data-gs-x="6" data-gs-y="0" data-gs-width="4" data-gs-height="4">
@@ -57,6 +70,6 @@
 <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 <script>var exports = {"__esModule": true};</script>
 <script src="C:\Users\brara\projects\ventilator\natural_breathing_app\node_modules\odex\src\odex.js"></script>
-<script src="./myChart.js"></script>
+<script src="./d3chart_tests.js"></script>
 
 </html>

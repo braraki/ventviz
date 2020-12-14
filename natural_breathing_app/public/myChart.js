@@ -11,10 +11,16 @@ var Simulator = function(R, C, frc, pbf, pbmp, pbit, t0, tf) {
     this.tf = tf;
     this.y0 = [this.frc, 0, 0, 0, 0];
     var [labels, volume_data, flow_data, paw_data, palv_data, pmus_data] = runODE(t0, tf, this.y0, params);
-    var [volumeChart, flowChart, pressureChart] = renderChart(volume_data, flow_data, paw_data, palv_data, pmus_data, labels);
-    this.volumeChart = volumeChart;
-    this.flowChart = flowChart;
-    this.pressureChart = pressureChart;
+    // var [volumeChart, flowChart, pressureChart] = renderChart(volume_data, flow_data, paw_data, palv_data, pmus_data, labels);
+    
+    var dispatch = d3.dispatch('mymousemove');
+
+
+    renderChartD3(volume_data, "volumeChart", labels);
+    renderChartD3(flow_data, "flowChart", labels);
+    // this.volumeChart = volumeChart;
+    // this.flowChart = flowChart;
+    // this.pressureChart = pressureChart;
 };
 
 $.extend(Simulator.prototype, {
@@ -45,16 +51,17 @@ $.extend(Simulator.prototype, {
 });
 
 var mySimulator = new Simulator(2, 140, 2, 10, 7, 1, 0, 10);
-d3chart();
 
-function renderChartD3(volume_data, flow_data, paw_data, palv_data, pmus_data, time) {
+function renderChartD3(data, div_name, time) {
+    var containerWidth = +d3.select("#" + div_name).style('width').slice(0, -2)
+
     // set the dimensions and margins of the graph
-    var margin = {top: 10, right: 30, bottom: 30, left: 60},
-        width = 460 - margin.left - margin.right,
+    var margin = {top: 10, right: 30, bottom: 30, left: 30},
+        width = containerWidth - margin.left - margin.right,
         height = 400 - margin.top - margin.bottom;
 
     // append the svg object to the body of the page
-    var svg = d3.select("#my_dataviz")
+    var svg = d3.select("#" + div_name)
       .append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
@@ -62,22 +69,29 @@ function renderChartD3(volume_data, flow_data, paw_data, palv_data, pmus_data, t
         .attr("transform",
               "translate(" + margin.left + "," + margin.top + ")");
 
-    //Read the data
-    d3.csv("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/data_IC.csv",function(data) {
+    var data_fixed = d3.zip(time, data)
+        .map(function(d) {
+            return {
+                x: d[0].toFixed(3),
+                y: d[1].toFixed(3)
+            };
+        });
 
-      // Add X axis --> it is a date format
-      var x = d3.scaleLinear()
-        .domain([1,100])
-        .range([ 0, width ]);
-      svg.append("g")
+    // Add X axis --> it is a date format
+    var x = d3.scaleLinear()
+        .domain(d3.extent(time))
+        .range([ 0, width ])
+        .nice();
+    svg.append("g")
         .attr("transform", "translate(0," + height + ")")
         .call(d3.axisBottom(x));
 
-      // Add Y axis
-      var y = d3.scaleLinear()
-        .domain([0, 13])
-        .range([ height, 0 ]);
-      svg.append("g")
+    // Add Y axis
+    var y = d3.scaleLinear()
+        .domain(d3.extent(data))
+        .range([ height, 0 ])
+        .nice();
+    svg.append("g")
         .call(d3.axisLeft(y));
 
       // This allows to find the closest X index of the mouse:
@@ -103,7 +117,7 @@ function renderChartD3(volume_data, flow_data, paw_data, palv_data, pmus_data, t
       // Add the line
       svg
         .append("path")
-        .datum(data)
+        .datum(data_fixed)
         .attr("fill", "none")
         .attr("stroke", "steelblue")
         .attr("stroke-width", 1.5)
@@ -119,21 +133,18 @@ function renderChartD3(volume_data, flow_data, paw_data, palv_data, pmus_data, t
         .style("pointer-events", "all")
         .attr('width', width)
         .attr('height', height)
-        .on('mouseover', mouseover)
+        .on('mouseover', function(){mouseover(focus, focusText);})
         .on('mousemove', mousemove)
-        .on('mouseout', mouseout);
+        .on('mouseout', function(){mouseout(focus, focusText);});
 
     // What happens when the mouse move -> show the annotations at the right positions.
-  function mouseover() {
-    focus.style("opacity", 1)
-    focusText.style("opacity",1)
-  }
+
 
   function mousemove() {
     // recover coordinate we need
     var x0 = x.invert(d3.mouse(this)[0]);
-    var i = bisect(data, x0, 1);
-    selectedData = data[i]
+    var i = bisect(data_fixed, x0, 1);
+    selectedData = data_fixed[i]
     focus
       .attr("cx", x(selectedData.x))
       .attr("cy", y(selectedData.y))
@@ -142,12 +153,19 @@ function renderChartD3(volume_data, flow_data, paw_data, palv_data, pmus_data, t
       .attr("x", x(selectedData.x)+15)
       .attr("y", y(selectedData.y))
     }
-  function mouseout() {
+
+
+}
+
+  function mouseover(focus, focusText) {
+    focus.style("opacity", 1)
+    focusText.style("opacity",1)
+  }
+
+  function mouseout(focus, focusText) {
     focus.style("opacity", 0)
     focusText.style("opacity", 0)
   }
-
-});}
 
 function renderChart(volume_data, flow_data, paw_data, palv_data, pmus_data, time) {
     time = time.map(x => x.toFixed(3));
@@ -272,7 +290,7 @@ function runODE(t0, tf, y0, params) {
             t0,    // initial x value
             y0,  // initial y values (just one in this example)
             tf,
-            s.grid(0.1, function(t, y) {
+            s.grid(0.05, function(t, y) {
                 t_data.push(t);
                 volume_data.push(y[0]);
                 flow_data.push(y[1]);
