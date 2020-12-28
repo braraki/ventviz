@@ -13,8 +13,6 @@ function runODE(t0, tf, y0, params) {
     s.denseOutput = true;  // request interpolation closure in solution callback
 
     var natural_breathing = function(params) {
-
-        
         var R = params["R"];
         var C = params["C"]/1000.;
         var frc = params["frc"];

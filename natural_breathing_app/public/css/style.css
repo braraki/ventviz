@@ -1,0 +1,13 @@
+.container {
+    width: 50%;
+    height: 50%;
+}
+
+text.focus-text {
+  font-family: "arial";
+  font-size: small;
+}
+
+input[type=number] {
+  width: 3em;
+}
