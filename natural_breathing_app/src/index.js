@@ -11,7 +11,7 @@ var defaultODEParams = {
   "pbf": 10,
   "pbmp": 7,
   "pbit": 1,
-  "step": 0.1
+  "step": 0.001
 }
 
 var margin = {top: 10, right: 60, bottom: 60, left: 60};
@@ -25,6 +25,7 @@ var defaultChartParams = {
   "timeDomain": 10
 }
 
+var playTime = 5000;
 
 var charts = [{id: "volumeChart", variables: [{"name": "volume", "color": "red", "label": "Volume (L)"}]},
   {id: "flowChart", variables: [{name: "flow", "color": "red", "label": "Flow (L/s)"}]},
@@ -32,7 +33,7 @@ var charts = [{id: "volumeChart", variables: [{"name": "volume", "color": "red",
 
 ReactDOM.render(
   <React.StrictMode>
-    <Simulator odeParams={defaultODEParams} chartParams={defaultChartParams} svgDims={svgDims} charts={charts}/>
+    <Simulator odeParams={defaultODEParams} chartParams={defaultChartParams} svgDims={svgDims} charts={charts} playTime={playTime}/>
   </React.StrictMode>,
   document.getElementById('root')
 );

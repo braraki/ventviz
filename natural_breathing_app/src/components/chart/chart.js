@@ -9,8 +9,8 @@ import './chart.css';
 // https://reactjs.org/docs/state-and-lifecycle.html
 // https://reactjs.org/docs/handling-events.html
 // https://observablehq.com/@d3/multi-line-chart
+// 
 
-// update state when props change or recalc from props every time?
 class Chart extends React.Component {
   constructor(props) {
     super(props);
@@ -24,7 +24,6 @@ class Chart extends React.Component {
     this.state = {"data": this.formatData()}
   }
 
-  // should i save
   componentDidMount() {
     this.svg = d3.select(this.container)
       .append("svg")
@@ -36,7 +35,6 @@ class Chart extends React.Component {
     
     this.setAxes();
     this.renderChart();
-
   }
 
   formatData() {
@@ -66,25 +64,86 @@ class Chart extends React.Component {
       .call(d3.axisLeft(this.y));
   }
   
+  // todo: update logic
   componentDidUpdate() {
     console.log("updated", this.props.chartInfo.id, this.state);
   }
 
   renderChart() {
-    console.log("rendering chart");
-    
+    this.clip = this.svg.append("clipPath")
+      .attr("id", "clip-" + this.props.idx)
+      .append("rect")
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("width", 0)
+      .attr("height", this.height);
+             // set the y radius
+
     this.svg.append("g")
+      .attr("id", "path-group-" + this.props.idx)
       .selectAll("path")
       .data(this.state.data)
       .enter()
       .append("path")
         .attr("fill", "none")
         .attr("stroke", d => d.color)
+        .attr("clip-path", "url(#clip-" + this.props.idx + ")")
         .attr("d", d => d3.line()
           .x(d => this.x(d[0]))
           .y(d => this.y(d[1]))
           .curve(d3.curveMonotoneX)
           (d3.zip(d.x, d.y)))
+
+    this.focuses = this.svg.selectAll("g.focus-group")
+      .data(this.state.data)
+      .enter()
+      .append("g")
+      .append("circle")
+        .attr("fill", d => d.color)
+        .attr("r", 5)
+        .attr("transform", d =>
+          "translate(" + this.x(d.x[0]) + "," + this.y(d.y[0]) + ")")
+
+    // extra zero line for the flow chart
+    if (this.props.chartInfo.id == "flowChart") {
+      this.svg.append("line")
+        .attr("x1", 0)  
+        .attr("y1", this.y(0))
+        .attr("x2", this.width)
+        .attr("y2", this.y(0))
+        .style("stroke-dasharray", "3,3")
+        .style("stroke", "black")
+        .style("fill", "none")
+        .style("opacity", 0.2);
+    }
+  }
+
+
+  // https://groups.google.com/g/d3-js/c/WC_7Xi6VV50/m/j1HK0vIWI-EJ
+  // https://d3-wiki.readthedocs.io/zh_CN/master/Transitions/
+  // https://stackoverflow.com/questions/10692100/invoke-a-callback-at-the-end-of-a-transition
+  // perhaps designate a parent transition within simulator
+  play(sharedTransition) {
+    this.clip.transition(sharedTransition)
+      .attr("width", this.width);
+
+    this.focuses.transition(sharedTransition)
+      .attrTween("transform", d =>
+        function(t) {
+          var idxDec = t*(d.x.length-1);
+          var idxInt = Math.floor(idxDec);
+
+          var leftX = this.x(d.x[idxInt]);
+          var rightX = t === 1 ? leftX : this.x(d.x[idxInt+1]);
+          var leftY = this.y(d.y[idxInt]);
+          var rightY = t === 1 ? leftY : this.y(d.y[idxInt+1]);
+
+          var xTrans = d3.interpolateNumber(leftX, rightX)(idxInt-idxDec);
+          var yTrans = d3.interpolateNumber(leftY, rightY)(idxInt-idxDec);
+
+        return "translate(" + xTrans + "," + yTrans + ")";
+        }.bind(this)
+      )
   }
 
   render() {
