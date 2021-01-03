@@ -14,6 +14,8 @@ var defaultODEParams = {
   "step": 0.001
 }
 
+// todo: clean up input parameters
+
 var margin = {top: 10, right: 60, bottom: 60, left: 60};
 var width = 500 - margin.left - margin.right;
 var height = 300 - margin.top - margin.bottom;
@@ -25,15 +27,13 @@ var defaultChartParams = {
   "timeDomain": 10
 }
 
-var playTime = 5000;
-
 var charts = [{id: "volumeChart", variables: [{"name": "volume", "color": "red", "label": "Volume (L)"}]},
   {id: "flowChart", variables: [{name: "flow", "color": "red", "label": "Flow (L/s)"}]},
   {id: "pressureChart", variables: [{"name": "paw", "color": "red", "label": "Paw"}, {"name": "palv", "color": "blue", "label": "Palv"}, {"name": "pmus", "color": "pink", "label": "pmus"}]}]
 
 ReactDOM.render(
   <React.StrictMode>
-    <Simulator odeParams={defaultODEParams} chartParams={defaultChartParams} svgDims={svgDims} charts={charts} playTime={playTime}/>
+    <Simulator odeParams={defaultODEParams} chartParams={defaultChartParams} svgDims={svgDims} charts={charts}/>
   </React.StrictMode>,
   document.getElementById('root')
 );

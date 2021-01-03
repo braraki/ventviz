@@ -21,7 +21,8 @@ class Chart extends React.Component {
     this.height = this.props.svgDims.height;
     this.yVars = this.props.chartInfo.variables
 
-    this.state = {"data": this.formatData()}
+    //this.state = {"data": this.formatData(),
+     //             "prevData": null}
   }
 
   componentDidMount() {
@@ -62,50 +63,9 @@ class Chart extends React.Component {
 
     this.svg.append("g")
       .call(d3.axisLeft(this.y));
-  }
-  
-  // todo: update logic
-  componentDidUpdate() {
-    console.log("updated", this.props.chartInfo.id, this.state);
-  }
 
-  renderChart() {
-    this.clip = this.svg.append("clipPath")
-      .attr("id", "clip-" + this.props.idx)
-      .append("rect")
-      .attr("x", 0)
-      .attr("y", 0)
-      .attr("width", 0)
-      .attr("height", this.height);
-             // set the y radius
-
-    this.svg.append("g")
-      .attr("id", "path-group-" + this.props.idx)
-      .selectAll("path")
-      .data(this.state.data)
-      .enter()
-      .append("path")
-        .attr("fill", "none")
-        .attr("stroke", d => d.color)
-        .attr("clip-path", "url(#clip-" + this.props.idx + ")")
-        .attr("d", d => d3.line()
-          .x(d => this.x(d[0]))
-          .y(d => this.y(d[1]))
-          .curve(d3.curveMonotoneX)
-          (d3.zip(d.x, d.y)))
-
-    this.focuses = this.svg.selectAll("g.focus-group")
-      .data(this.state.data)
-      .enter()
-      .append("g")
-      .append("circle")
-        .attr("fill", d => d.color)
-        .attr("r", 5)
-        .attr("transform", d =>
-          "translate(" + this.x(d.x[0]) + "," + this.y(d.y[0]) + ")")
-
-    // extra zero line for the flow chart
-    if (this.props.chartInfo.id == "flowChart") {
+      // extra zero line for the flow chart
+    if (this.props.chartInfo.id === "flowChart") {
       this.svg.append("line")
         .attr("x1", 0)  
         .attr("y1", this.y(0))
@@ -117,13 +77,92 @@ class Chart extends React.Component {
         .style("opacity", 0.2);
     }
   }
+  
+  // https://reactjs.org/docs/react-component.html#the-component-lifecycle
+  // https://reactjs.org/docs/react-component.html#static-getderivedstatefromprops
+  // https://reactjs.org/blog/2018/06/07/you-probably-dont-need-derived-state.html#what-about-memoization
+  // todo: update logic
+  componentDidUpdate() {
+    this.updateChart();
+    
+  }
 
+  renderChart() {
+    console.log("rendering chart");
+    var data = this.formatData();
+
+    this.clip = this.svg.append("clipPath")
+      .attr("id", "clip-" + this.props.idx + "-current")
+      .classed("current", true)
+      .append("rect")
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("width", 0)
+      .attr("height", this.height);
+             // set the y radius
+
+    this.svg.append("g")
+      .classed("path-group", true)
+      .classed("current", true)
+      .selectAll("path.current")
+      .data(data)
+      .enter()
+      .append("path")
+        .classed("current", true)
+        .attr("fill", "none")
+        .attr("stroke", d => d.color)
+        .attr("clip-path", "url(#clip-" + this.props.idx + "-current)")
+        .attr("d", d => d3.line()
+          .x(d => this.x(d[0]))
+          .y(d => this.y(d[1]))
+          .curve(d3.curveMonotoneX)
+          (d3.zip(d.x, d.y)))
+
+    this.focuses = this.svg.selectAll("g.focus-group.current")
+      .data(data)
+      .enter()
+      .append("g")
+      .classed("focus-group", true)
+      .append("circle")
+        .attr("fill", d => d.color)
+        .attr("r", 5)
+        .attr("transform", d =>
+          "translate(" + this.x(d.x[0]) + "," + this.y(d.y[0]) + ")")
+
+
+  }
+
+  // make sure i'm not leaving stuff/data that should be removed
+  updateChart() {
+    console.log("updating chart");
+    this.svg.selectAll(".previous").remove();
+    this.svg.selectAll(".focus-group").remove();
+    this.svg.select("#clip-" + this.props.idx + "-current")
+      .attr("id", "clip-" + this.props.idx + "-previous");
+
+    this.svg.select(".path-group.current")
+      .selectAll("path")
+      .attr("clip-path", "url(#clip-" + this.props.idx + "-previous");
+
+    this.svg.selectAll(".current")
+      .classed("current", false)
+      .classed("previous", true);
+
+    this.renderChart();
+  }
 
   // https://groups.google.com/g/d3-js/c/WC_7Xi6VV50/m/j1HK0vIWI-EJ
   // https://d3-wiki.readthedocs.io/zh_CN/master/Transitions/
   // https://stackoverflow.com/questions/10692100/invoke-a-callback-at-the-end-of-a-transition
   // perhaps designate a parent transition within simulator
   play(sharedTransition) {
+    console.log("playing");
+    this.svg.select("#clip-" + this.props.idx + "-previous")
+      .select("rect")
+      .transition(sharedTransition)
+      .attr("width", 0)
+      .attr("x", this.width);
+
     this.clip.transition(sharedTransition)
       .attr("width", this.width);
 

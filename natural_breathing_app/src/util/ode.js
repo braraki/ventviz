@@ -1,6 +1,6 @@
 import * as odex from 'odex'
 
-function sinusBreath(t, patient_breath_max_pmus, patient_breath_inspiratory_time) {
+function sinBreath(t, patient_breath_max_pmus, patient_breath_inspiratory_time) {
 
 
     var dpmus = t < patient_breath_inspiratory_time ? 
@@ -37,7 +37,7 @@ function runODE(t0, tf, step, y0, params) {
 
             var patient_breath_t = t % patient_breath_time;
 
-            var dpmus = sinusBreath(patient_breath_t, patient_breath_max_pmus, patient_breath_inspiratory_time);
+            var dpmus = sinBreath(patient_breath_t, patient_breath_max_pmus, patient_breath_inspiratory_time);
 
             var dpalv = dpmus - palv/(R*C);
 
