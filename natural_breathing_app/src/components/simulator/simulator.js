@@ -9,8 +9,11 @@ class Simulator extends React.Component {
   constructor(props) {
     super(props);
 
-    var startVars = {"time": 0, "volume": this.props.odeParams["frc"], "flow": 0, "paw": 0, "palv": 0, "pmus": 0};
-    var soln = solveODE(this.props.chartParams["timeDomain"], this.props.odeParams, startVars)
+    var startVars = {"time": 0, "volume": this.props.odeParams["frc"],
+      "flow": 0, "paw": this.props.odeParams["peep"],
+      "palv": this.props.odeParams["peep"], "pmus": 0};
+    var soln = solveODE(this.props.chartParams["timeDomain"],
+      this.props.odeParams, startVars)
 
     this.state = {'odeParams': this.props.odeParams,
                   'chartParams': this.props.chartParams,
@@ -47,9 +50,12 @@ class Simulator extends React.Component {
   resolve() {
     console.log("solving for further timesteps");
     var lastIdx = this.state.soln.time.length - 1 ;
-    var lastVars = {"time": 0, "volume": this.state.soln.volume[lastIdx], "flow": this.state.soln.flow[lastIdx], 
-      "paw": this.state.soln.paw[lastIdx], "palv": this.state.soln.palv[lastIdx], "pmus": this.state.soln.pmus[lastIdx]}
-    var nextSoln = solveODE(this.props.chartParams["timeDomain"], this.props.odeParams, lastVars)
+    var lastVars = {"time": 0, "volume": this.state.soln.volume[lastIdx],
+      "flow": this.state.soln.flow[lastIdx], 
+      "paw": this.state.soln.paw[lastIdx], "palv": this.state.soln.palv[lastIdx],
+      "pmus": this.state.soln.pmus[lastIdx]}
+    var nextSoln = solveODE(this.props.chartParams["timeDomain"],
+      this.props.odeParams, lastVars)
     
     // needs fixing: the next solution isn't being solved for correctly
     this.setState({"soln": nextSoln});
