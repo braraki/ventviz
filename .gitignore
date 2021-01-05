@@ -1,3 +1,4 @@
 data/
 natural_breathing_app/node_modules/
 natural_breathing_app/package-lock.json
+natural_breathing_app/.eslintcache

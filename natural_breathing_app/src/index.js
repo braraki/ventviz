@@ -5,13 +5,18 @@ import {Simulator} from './components';
 //import reportWebVitals from './reportWebVitals';
 
 var defaultODEParams = {
-  "R": 2,
-  "C": 140,
+  "R": 10,
+  "C": 20,
   "frc": 2,
-  "pbf": 10,
-  "pbmp": 7,
-  "pbit": 1,
-  "step": 0.001
+  "pbf": 16, // patient breath frequency
+  "pbmp": 4, // patient breath max pmus
+  "pbit": 1, // patient breath inspiration time
+  "step": 0.001,
+  "RR": 20,
+  "IE": 3,
+  "VT": 200,
+  "peep": 5,
+  "flow_rise_time": 0.05
 }
 
 // todo: clean up input parameters
