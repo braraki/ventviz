@@ -119,7 +119,7 @@ function runODE(t0, tf, step, y0, params) {
                 var dvolume = 0;
                 var dpaw = -(paw-peep)/0.005;
                 var dpalv = 0;
-                var dflow = ((- palv + peep)/R)/0.02;
+                var dflow = ((- palv + peep)/R)/0.02 + pmus/R;
             }
             // expiratory phase, where the ventilator allows the
             // patient to PASSIVELY exhale (the ventilator does not

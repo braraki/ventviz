@@ -94,7 +94,7 @@ def flow_control(y, t, params):
         dV = 0
         dpaw = -(paw-peep)/0.005
         dpalv = 0
-        dflow = ((pmus - palv + peep)/R)/0.02
+        dflow = ((- palv + peep)/R)/0.02 + pmus/R
     # expiratory phase, where the ventilator allows the
     # patient to PASSIVELY exhale (the ventilator does not
     # control exhalation in any way in this case, although
