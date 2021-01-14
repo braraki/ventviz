@@ -1,11 +1,11 @@
 import * as odex from 'odex'
 
-function sinBreath(t, patient_breath_max_pmus, patient_breath_inspiratory_time) {
+function sinBreath(t, patientBreathMaxPMUS, patientBreathInspiratoryTime) {
 
 
-    var dpmus = t < patient_breath_inspiratory_time ? 
-        patient_breath_max_pmus * (Math.PI/patient_breath_inspiratory_time) * 
-        Math.cos(Math.PI*t/patient_breath_inspiratory_time) : 0
+    var dpmus = t < patientBreathInspiratoryTime ? 
+        patientBreathMaxPMUS * (Math.PI/patientBreathInspiratoryTime) * 
+        Math.cos(Math.PI*t/patientBreathInspiratoryTime) : 0
 
     return dpmus;
 }
@@ -13,24 +13,27 @@ function sinBreath(t, patient_breath_max_pmus, patient_breath_inspiratory_time) 
 // return flow in mL/s
 // need to get 'volume' control working for this. right now the rise time
 // is tuned for the trapezoidal flow, not for this exponential flow
-function exponential_flow(t, flow, insp_time, const_flow, flow_rise_time) {
-    flow = 1000.0 * flow;
-    if (t < flow_rise_time) {
-        var dflow = 100.0*(const_flow - flow);
+function exponential_flow(t, flow, inspTime, constFlow, flowRiseTime) {
+    var flowML = 1000.0 * flow;
+    var dflow;
+    if (t < flowRiseTime) {
+        dflow = 100.0*(constFlow - flowML);
     }
-    else if (t >= (insp_time - flow_rise_time) && t < insp_time) {
-        var dflow = 100.0 * (0 - flow);
+    else if (t >= (inspTime - flowRiseTime) && t < inspTime) {
+        dflow = 100.0 * (0 - flowML);
     }
     else {
-        var dflow = 0;
+        dflow = 0;
     }
 
     return dflow;
 }
 
-function solveODE(time, params, current_state) {
+function solveODE(startTime, endTime, params, current_state) {
+    //console.log("solving ode with params:", params);
     var y0 = [current_state["volume"], current_state["flow"], current_state["paw"], current_state["palv"], current_state["pmus"]];
-    var soln = runODE(0, time, params["step"], y0, params);
+    var soln = runODE(startTime, endTime, params["step"], y0, params);
+    
     return soln
 }
 
@@ -42,9 +45,9 @@ function runODE(t0, tf, step, y0, params) {
         var R = params["R"];
         var C = params["C"]/1000.;
         //var frc = params["frc"];
-        var patient_breath_time = 60./params["pbf"];
-        var patient_breath_max_pmus = params["pbmp"];
-        var patient_breath_inspiratory_time = params["pbit"];
+        var patientBreathTime = 60./params["pbf"];
+        var patientBreathMaxPMUS = params["pbmp"];
+        var patientBreathInspiratoryTime = params["pbit"];
 
         return function(t, y) {
             //var volume = y[0] - frc;
@@ -53,10 +56,10 @@ function runODE(t0, tf, step, y0, params) {
             var palv = y[3];
             //var pmus = y[4];
 
-            var patient_breath_t = t % patient_breath_time;
+            var patientBreathT = t % patientBreathTime;
 
-            var dpmus = sinBreath(patient_breath_t,
-                patient_breath_max_pmus, patient_breath_inspiratory_time);
+            var dpmus = sinBreath(patientBreathT,
+                patientBreathMaxPMUS, patientBreathInspiratoryTime);
 
             var dpalv = dpmus - palv/(R*C);
 
@@ -74,20 +77,20 @@ function runODE(t0, tf, step, y0, params) {
         var R = params["R"];
         var C = params["C"]/1000.;
         //var frc = params["frc"];
-        var patient_breath_time = 60./params["pbf"];
-        var patient_breath_max_pmus = params["pbmp"];
-        var patient_breath_inspiratory_time = params["pbit"];
+        var patientBreathTime = 60./params["pbf"];
+        var patientBreathMaxPMUS = params["pbmp"];
+        var patientBreathInspiratoryTime = params["pbit"];
 
         var RR = params["RR"];
         var IE = params["IE"];
         var VT = params["VT"];
         var peep = params["peep"];
 
-        var flow_rise_time = params['flow_rise_time'];
+        var flowRiseTime = params['frt'];
 
-        var breath_time = 60./RR;
-        var insp_time = 1./(1. + IE) * breath_time;
-        var const_flow = VT/(insp_time - flow_rise_time);
+        var breathTime = 60./RR;
+        var inspTime = 1./(1. + IE) * breathTime;
+        var constFlow = VT/(inspTime - flowRiseTime);
 
         return function(t, y) {
             //var volume = y[0] - frc;
@@ -95,31 +98,33 @@ function runODE(t0, tf, step, y0, params) {
             var paw = y[2];
             var palv = y[3];
             var pmus = y[4];
+            
+            var patientBreathT = t % patientBreathTime;
 
-            var patient_breath_t = t % patient_breath_time;
+            var dpmus = sinBreath(patientBreathT,
+                patientBreathMaxPMUS,patientBreathInspiratoryTime);
 
-            var dpmus = sinBreath(patient_breath_t,
-                patient_breath_max_pmus,patient_breath_inspiratory_time);
+            t = t % breathTime;
 
-            t = t % breath_time;
+            var dvolume, dflow, dpalv, dpaw;
 
             // inpsiratory phase, when the ventilator is delivering
             // a set flow to the patient
-            if (t < insp_time) {
-                var dvolume = flow;
-                var dflow = exponential_flow(t, flow, insp_time,
-                    const_flow, flow_rise_time)/1000.; // L / s
-                var dpalv = - dpmus + flow/C;
-                var dpaw = dpalv + R*dflow;
+            if (t < inspTime) {
+                dvolume = flow;
+                dflow = exponential_flow(t, flow, inspTime,
+                    constFlow, flowRiseTime)/1000.; // L / s
+                dpalv = - dpmus + flow/C;
+                dpaw = dpalv + R*dflow;
             }
             // this here delivers approximately a step function to reset the flow
             // to be -volume/(R*C) for when expiration starts
             // Paw also needs to be set to PEEP during this time
-            else if (t >= insp_time && t < insp_time + 0.02) {
-                var dvolume = 0;
-                var dpaw = -(paw-peep)/0.005;
-                var dpalv = 0;
-                var dflow = ((- palv + peep)/R)/0.02 + pmus/R;
+            else if (t >= inspTime && t < inspTime + 0.02) {
+                dvolume = 0;
+                dpaw = -(paw-peep)/0.005;
+                dpalv = 0;
+                dflow = ((- palv + peep)/R)/0.02;
             }
             // expiratory phase, where the ventilator allows the
             // patient to PASSIVELY exhale (the ventilator does not
@@ -127,10 +132,10 @@ function runODE(t0, tf, step, y0, params) {
             // there are ventilator control modes that can force
             // active exhalation I think)
             else {
-                var dvolume = flow;
-                var dflow = -flow/(R*C) + dpmus/R;
-                var dpalv = - dflow*R;
-                var dpaw = -(paw-peep)/0.1;
+                dvolume = flow;
+                dflow = -flow/(R*C) + dpmus/R;
+                dpalv = - dflow*R;
+                dpaw = -(paw-peep)/0.1;
             }
             return [dvolume, dflow, dpaw, dpalv, dpmus];
         };
@@ -143,9 +148,11 @@ function runODE(t0, tf, step, y0, params) {
     var palv_data = [];
     var pmus_data = [];
 
-    s.solve(volumeControl(params),
+    var breathingMode = params["ventilated"] ? volumeControl : naturalBreathing;
+
+    s.solve(breathingMode(params),
             t0,    // initial x value
-            y0,  // initial y values (just one in this example)
+            y0,  // initial y values
             tf,
             s.grid(step, function(t, y) {
                 t_data.push(t);
