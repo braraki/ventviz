@@ -112,11 +112,11 @@ function runODE(t0, tf, step, y0, params) {
             // this here delivers approximately a step function to reset the flow
             // to be -volume/(R*C) for when expiration starts
             // Paw also needs to be set to PEEP during this time
-            else if (flowT >= inspTime && flowT < inspTime + 0.1) {
+            else if (flowT >= inspTime && flowT < inspTime + 0.06) {
                 dvolume = 0;
                 dpaw = -(paw-peep)/0.005;
                 dpalv = 0;
-                dflow = ((- palv + peep)/R - constFlow/1000.)/0.1;
+                dflow = -(flow - (- palv + peep)/R - constFlow/1000.)/0.005
             }
             // expiratory phase, where the ventilator allows the
             // patient to PASSIVELY exhale (the ventilator does not

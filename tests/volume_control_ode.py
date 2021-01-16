@@ -77,7 +77,7 @@ def flow_control(y, t, params):
     patient_breath_t = t % patient_breath_time
 
     # these derivatives are common to all vent circuits
-    dpmus = sinusoidal_breath(patient_breath_t, patient_breath_max_pmus, patient_breath_inspiratory_time)
+    dpmus = 0 # sinusoidal_breath(patient_breath_t, patient_breath_max_pmus, patient_breath_inspiratory_time)
 
     t = t % breath_time
 
@@ -91,11 +91,11 @@ def flow_control(y, t, params):
     # this here delivers approximately a step function to reset the flow
     # to be -volume/(R*C) for when expiration starts
     # Paw also needs to be set to PEEP during this time
-    elif t >= insp_time and t < insp_time + 0.02:
+    elif t >= insp_time and t < insp_time + 0.06:
         dV = 0
         dpaw = -(paw-peep)/0.005
         dpalv = 0
-        dflow = ((- palv + peep)/R - const_flow/1000.)/0.02
+        dflow = -(flow - (- palv + peep)/R - const_flow/1000.)/0.005
         # dflow = ((- palv + peep)/R)/0.02 + pmus/R
     # expiratory phase, where the ventilator allows the
     # patient to PASSIVELY exhale (the ventilator does not
