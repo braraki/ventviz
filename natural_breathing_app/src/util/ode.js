@@ -82,7 +82,7 @@ function runODE(t0, tf, step, y0, params) {
 
         var breathTime = 60./RR;
         var inspTime = 1./(1. + IE) * breathTime;
-        var constFlow = VT/(inspTime - flowRiseTime);
+        var constFlow = VT/(inspTime);
 
         return function(t, y) {
             //var volume = y[0] - frc;
@@ -115,8 +115,8 @@ function runODE(t0, tf, step, y0, params) {
             else if (flowT >= inspTime && flowT < inspTime + 0.06) {
                 dvolume = 0;
                 dpaw = -(paw-peep)/0.005;
-                dpalv = 0;
-                dflow = -(flow - (- palv + peep)/R - constFlow/1000.)/0.005
+                dpalv = dpmus;
+                dflow = -(flow - (- palv + peep)/R )/0.005 - dpmus/R;
             }
             // expiratory phase, where the ventilator allows the
             // patient to PASSIVELY exhale (the ventilator does not

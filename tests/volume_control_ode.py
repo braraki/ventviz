@@ -91,11 +91,12 @@ def flow_control(y, t, params):
     # this here delivers approximately a step function to reset the flow
     # to be -volume/(R*C) for when expiration starts
     # Paw also needs to be set to PEEP during this time
-    elif t >= insp_time and t < insp_time + 0.06:
+    elif t >= insp_time and t < insp_time + 0.1 :
         dV = 0
         dpaw = -(paw-peep)/0.005
-        dpalv = 0
-        dflow = -(flow - (- palv + peep)/R - const_flow/1000.)/0.005
+        # dpalv = dpmus - (palv - peep)/(R*C_static)
+        dpalv = dmus
+        dflow = -(flow - ( - palv + peep)/R )/0.005 - dpmus/R
         # dflow = ((- palv + peep)/R)/0.02 + pmus/R
     # expiratory phase, where the ventilator allows the
     # patient to PASSIVELY exhale (the ventilator does not
@@ -104,8 +105,10 @@ def flow_control(y, t, params):
     # active exhalation I think)
     else:
         dV = flow
-        dflow = -flow/(R*C_static) - dpmus/R
+        dflow = - flow/(R*C_static) - dpmus/R
         dpalv = - dflow*R
+        # dpalv = dpmus - (palv - peep)/(R*C_static)
+        # dflow = -dpalv/R
         dpaw = -(paw-peep)/0.1
 
     return [dV, dflow, dpaw, dpalv, dpmus]
@@ -122,7 +125,7 @@ frc = 2.0 # functional residual capacity in [L]
 breath_time = 60./RR
 insp_time = 1./(1 + IE) * breath_time
 flow_rise_time = 0.05 # seconds for the flow to do the step change
-const_flow = VT/(insp_time-flow_rise_time) # from area of trap 
+const_flow = VT/(insp_time) # from area of trap 
 const_pressure = 25.
 pressure_rise_time = 0.1
 patient_breath_frequency = 16.
