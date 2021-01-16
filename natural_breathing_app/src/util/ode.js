@@ -4,7 +4,7 @@ function sinBreath(t, patientBreathMaxPMUS, patientBreathInspiratoryTime) {
 
 
     var dpmus = t < patientBreathInspiratoryTime ? 
-        patientBreathMaxPMUS * (Math.PI/patientBreathInspiratoryTime) * 
+        - patientBreathMaxPMUS * (Math.PI/patientBreathInspiratoryTime) * 
         Math.cos(Math.PI*t/patientBreathInspiratoryTime) : 0
 
     return dpmus;
@@ -55,7 +55,7 @@ function runODE(t0, tf, step, y0, params) {
 
             var dpalv = dpmus - palv/(R*C);
 
-            var dflow = dpalv/R;
+            var dflow = -dpalv/R;
 
             var dvolume = flow;
 
@@ -106,7 +106,7 @@ function runODE(t0, tf, step, y0, params) {
                 dvolume = flow;
                 dflow = exponential_flow(flowT, flow, inspTime,
                     constFlow, flowRiseTime)/1000.; // L / s
-                dpalv = - dpmus + flow/C;
+                dpalv = dpmus + flow/C;
                 dpaw = dpalv + R*dflow;
             }
             // this here delivers approximately a step function to reset the flow
@@ -125,7 +125,7 @@ function runODE(t0, tf, step, y0, params) {
             // active exhalation I think)
             else {
                 dvolume = flow;
-                dflow = -flow/(R*C) + dpmus/R;
+                dflow = -flow/(R*C) - dpmus/R;
                 dpalv = - dflow*R;
                 dpaw = -(paw-peep)/0.1;
             }

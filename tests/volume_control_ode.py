@@ -6,7 +6,7 @@ import pdb
 
 def sinusoidal_breath(t, patient_breath_max_pmus, patient_breath_inspiratory_time):
     if t < patient_breath_inspiratory_time:
-        dpmus = patient_breath_max_pmus * (np.pi/patient_breath_inspiratory_time) * np.cos(np.pi*t/patient_breath_inspiratory_time)
+        dpmus = - patient_breath_max_pmus * (np.pi/patient_breath_inspiratory_time) * np.cos(np.pi*t/patient_breath_inspiratory_time)
     else:
         dpmus = 0
     return dpmus
@@ -17,14 +17,15 @@ def sinusoidal_breath(t, patient_breath_max_pmus, patient_breath_inspiratory_tim
 def exponential_flow(t, flow, insp_time, const_flow, flow_rise_time):
     const = 0
     flow = 1000.0 * flow
-    if t < flow_rise_time:
-        dflow = 100.0*(const_flow - flow)
+    dflow = 100.0*(const_flow - flow)
+    # if t < flow_rise_time:
+        # dflow = 100.0*(const_flow - flow)
         # const = 1
-    elif t >= (insp_time - flow_rise_time) and t < insp_time:
-        dflow = 100.0 * (0 - flow)
+    # elif t >= (insp_time - flow_rise_time) and t < insp_time:
+        # dflow = 100.0 * (0 - flow)
 
-    else:
-        dflow = 0
+    # else:
+        # dflow = 0
 
     return dflow
 
@@ -85,7 +86,7 @@ def flow_control(y, t, params):
     if t < insp_time:
         dV = flow
         dflow = flow_function(t, flow, insp_time, const_flow, flow_rise_time)/1000. # L / s
-        dpalv = -dpmus + flow/C_static
+        dpalv = dpmus + flow/C_static
         dpaw = dpalv + R*dflow
     # this here delivers approximately a step function to reset the flow
     # to be -volume/(R*C) for when expiration starts
@@ -94,7 +95,8 @@ def flow_control(y, t, params):
         dV = 0
         dpaw = -(paw-peep)/0.005
         dpalv = 0
-        dflow = ((- palv + peep)/R)/0.02 + pmus/R
+        dflow = ((- palv + peep)/R - const_flow/1000.)/0.02
+        # dflow = ((- palv + peep)/R)/0.02 + pmus/R
     # expiratory phase, where the ventilator allows the
     # patient to PASSIVELY exhale (the ventilator does not
     # control exhalation in any way in this case, although
@@ -102,7 +104,7 @@ def flow_control(y, t, params):
     # active exhalation I think)
     else:
         dV = flow
-        dflow = -flow/(R*C_static) + dpmus/R
+        dflow = -flow/(R*C_static) - dpmus/R
         dpalv = - dflow*R
         dpaw = -(paw-peep)/0.1
 
