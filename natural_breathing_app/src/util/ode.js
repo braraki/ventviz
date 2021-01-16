@@ -16,15 +16,7 @@ function sinBreath(t, patientBreathMaxPMUS, patientBreathInspiratoryTime) {
 function exponential_flow(t, flow, inspTime, constFlow, flowRiseTime) {
     var flowML = 1000.0 * flow;
     var dflow;
-    if (t < flowRiseTime) {
-        dflow = 100.0*(constFlow - flowML);
-    }
-    else if (t >= (inspTime - flowRiseTime) && t < inspTime) {
-        dflow = 100.0 * (0 - flowML);
-    }
-    else {
-        dflow = 0;
-    }
+    dflow = 100.0*(constFlow - flowML);
 
     return dflow;
 }
@@ -104,15 +96,15 @@ function runODE(t0, tf, step, y0, params) {
             var dpmus = sinBreath(patientBreathT,
                 patientBreathMaxPMUS,patientBreathInspiratoryTime);
 
-            t = t % breathTime;
+            var flowT = t % breathTime;
 
             var dvolume, dflow, dpalv, dpaw;
 
             // inpsiratory phase, when the ventilator is delivering
             // a set flow to the patient
-            if (t < inspTime) {
+            if (flowT < inspTime) {
                 dvolume = flow;
-                dflow = exponential_flow(t, flow, inspTime,
+                dflow = exponential_flow(flowT, flow, inspTime,
                     constFlow, flowRiseTime)/1000.; // L / s
                 dpalv = - dpmus + flow/C;
                 dpaw = dpalv + R*dflow;
@@ -120,11 +112,11 @@ function runODE(t0, tf, step, y0, params) {
             // this here delivers approximately a step function to reset the flow
             // to be -volume/(R*C) for when expiration starts
             // Paw also needs to be set to PEEP during this time
-            else if (t >= inspTime && t < inspTime + 0.02) {
+            else if (flowT >= inspTime && flowT < inspTime + 0.1) {
                 dvolume = 0;
                 dpaw = -(paw-peep)/0.005;
                 dpalv = 0;
-                dflow = ((- palv + peep)/R)/0.02;
+                dflow = ((- palv + peep)/R - constFlow/1000.)/0.1;
             }
             // expiratory phase, where the ventilator allows the
             // patient to PASSIVELY exhale (the ventilator does not

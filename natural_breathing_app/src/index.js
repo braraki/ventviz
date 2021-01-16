@@ -33,7 +33,7 @@ var defaultODEParams = {
   "IE": 3,
   "VT": 200,
   "peep": 5,
-  "frt": 0.05,
+  "frt": 0.1,
   "ventilated": true
 }
 

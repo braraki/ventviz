@@ -2,3 +2,4 @@ data/
 *node_modules/
 *.eslintcache
 natural_breathing_app/package-lock.json
+papers/
