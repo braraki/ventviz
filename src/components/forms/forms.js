@@ -220,7 +220,7 @@ class Forms extends React.Component {
             <Card.Header className="pl-2 pt-1 pb-1">
               Parameter Info & Ranges{/*this.state.paramSelected ? ': ' + this.state.selectedParam : ''*/}
             </Card.Header>
-            <Card.Body className="" style={{'fontSize': '0.75em', 'height': '100%'}}>
+            <Card.Body className="" style={{'fontSize': '1.0em', 'height': '100%'}}>
               {
                 this.state.paramSelected ? this.paramInfo[this.state.selectedParam] : "Click a parameter's name to display details."
               }
