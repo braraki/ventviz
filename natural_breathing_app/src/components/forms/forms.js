@@ -39,7 +39,7 @@ class Forms extends React.Component {
       'VT': 'VT: Tidal volume, 100-1000 mL', 
       'RR': 'RR: Respiratory rate, 5-25 Hz',
       'IE': "IE: Inspiration-exhalation ratio, fix I at 1 and set E from 0.25-6.",
-      'frt': 'frt: Flow rise time s (not configurable yet)'
+      'frt': 'frt: Flow rise time [s] (not configurable yet)'
     }
   }
 
