@@ -30,8 +30,7 @@ var defaultODEParams = {
   "pbit": 1, // patient breath inspiration time
   "step": 0.0001,
   "RR": 20,
-  "insp": 1,
-  // "IE": 3,
+  "IE": 3,
   "VT": 200,
   "peep": 5,
   "frt": 0.1,
