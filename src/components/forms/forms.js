@@ -79,7 +79,7 @@ class Forms extends React.Component {
             } else {
               this.value = Math.round(this.value/step) * step;
             }
-            console.log("d3 change");
+            // console.log("d3 change");
             onParamChange(this.name, this.value);
           });
       }.bind(this));
@@ -87,7 +87,7 @@ class Forms extends React.Component {
 
   // handles just checkbox for now
   handleChange(event) {
-    console.log("regular change");
+    // console.log("regular change");
     const target = event.target;
     const value = target.type === 'checkbox' ? target.checked : target.value;
     const name = target.name;
@@ -95,12 +95,12 @@ class Forms extends React.Component {
   }
 
   handleStart() {
-    console.log("starting");
+    // console.log("starting");
     this.props.onPlay();
   }
 
   handlePause() {
-    console.log("pausing");
+    // console.log("pausing");
     this.props.onPause();
   }
 
@@ -117,8 +117,8 @@ class Forms extends React.Component {
   }
 
   render () { 
-    console.log("rendering forms");
-    console.log(this.props);
+    // console.log("rendering forms");
+    // console.log(this.props);
     
     // todo: thorough cleanup of css (margins/padding in particular)
     return (

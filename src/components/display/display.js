@@ -22,7 +22,7 @@ class Display extends React.Component {
           if (this.props.soln !== null) {
             value = this.props.soln[v][idx].toFixed(2);
           } 
-          return <Card key={'card-' + v} style={{'height': '16.6%', 'fontSize': '1.5em', 'justifyContent': 'center'}} className="align-items-center">
+          return <Card key={'card-' + v} style={{'height': '16.6%', 'fontSize': '3.0em', 'justifyContent': 'center'}} className="align-items-center">
             <Card.Text className="mb-0">{value}</Card.Text>
             <Card.Text style={{'fontSize': '0.35em'}}>{this.labels[i]}</Card.Text>
             </Card>;
