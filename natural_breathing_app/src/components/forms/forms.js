@@ -30,16 +30,16 @@ class Forms extends React.Component {
     };
 
     this.paramInfo = {
-      'R': "R: Airway resistance, 1-200 [cmH2O*s/L^3]",
-      'C': "C: Lung compliance, 5-150 [mL/cmH2O]",
-      'pbf': "pbf: Patient breath frequency, 0-40 [Hz]",
-      'pbmp': "pbmp: Patient breath maximum pressure, 0-12 [cmH2O]",
-      'pbit': "pbit: Patient breath inhalation time, 0.2-6 [s]",
-      'peep': 'peep: Positive end-expiratory pressure, 0-25 [cmH2O]', 
-      'VT': 'VT: Tidal volume, 100-1000 [mL]', 
-      'RR': 'RR: Respiratory rate, 5-25 [Hz]',
+      'R': "R: Airway resistance, 1-200 cmH2O*s/L^3",
+      'C': "C: Lung compliance, 5-150 mL/cmH2O",
+      'pbf': "pbf: Patient breath frequency, 0-40 Hz",
+      'pbmp': "pbmp: Patient breath maximum pressure, 0-12 cmH2O",
+      'pbit': "pbit: Patient breath inhalation time, 0.2-6 s",
+      'peep': 'peep: Positive end-expiratory pressure, 0-25 cmH2O', 
+      'VT': 'VT: Tidal volume, 100-1000 mL', 
+      'RR': 'RR: Respiratory rate, 5-25 Hz',
       'IE': "IE: Inspiration-exhalation ratio, fix I at 1 and set E from 0.25-6.",
-      'frt': 'frt: Flow rise time [s] (not configurable yet)'
+      'frt': 'frt: Flow rise time s (not configurable yet)'
     }
   }
 
