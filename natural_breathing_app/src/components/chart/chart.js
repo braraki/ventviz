@@ -1,70 +1,116 @@
 import React from 'react';
 import * as d3 from 'd3';
 import './chart.css';
+import {Container} from 'react-bootstrap'
 
-// https://www.freecodecamp.org/news/how-to-get-started-with-d3-and-react-c7da74a5bd9f/
-// https://medium.com/@numberpicture/react-d3-comparing-alternative-approaches-1a63ced48d66
-// alternate way: https://medium.com/@jeffbutsch/using-d3-in-react-with-hooks-4a6c61f1d102
-// https://observablehq.com/@d3/multi-line-chart
-// https://reactjs.org/docs/state-and-lifecycle.html
-// https://reactjs.org/docs/handling-events.html
-// https://observablehq.com/@d3/multi-line-chart
-// 
-
+// change to function component, maybe
 class Chart extends React.Component {
   constructor(props) {
     super(props);
-    
     // these shouldn't change
     this.margin = this.props.svgDims.margin;
     this.width = this.props.svgDims.width;
     this.height = this.props.svgDims.height;
-    this.yVars = this.props.chartInfo.variables
-
-    //this.state = {"data": this.formatData(),
-     //             "prevData": null}
+    this.yVars = this.props.chartInfo.variables;
+    this.timeDomain = this.props.chartParams.timeDomain;
+    
+    this.axesSet = false;
   }
 
   componentDidMount() {
     this.svg = d3.select(this.container)
+      .classed("svg-container", true)
       .append("svg")
-      .attr("width", this.width + this.margin.left + this.margin.right)
-      .attr("height", this.height + this.margin.top + this.margin.bottom)
+      .attr("preserveAspectRatio", "xMinYMin meet")
+      .attr("viewBox", "0 0 " + (this.width + this.margin.left + this.margin.right) + " " +  (this.height + this.margin.top + this.margin.bottom))
+      .classed("svg-content-responsive", true)
       .append("g") 
       .attr("transform",
-            "translate(" + this.margin.left + "," + this.margin.top + ")")
+            "translate(" + this.margin.left + "," + this.margin.top + ")");
     
-    this.setAxes();
-    this.renderChart();
+    this.initChart();
   }
 
   formatData() {
     return this.yVars.map(yVar => 
-      ({"name": yVar.name, "x": this.props.soln.time, "y": this.props.soln[yVar.name], 
+      ({"name": yVar.name, "x": this.props.soln.time.map(time => time - this.props.loop * this.timeDomain), "y": this.props.soln[yVar.name], 
       "color": yVar.color, "label": yVar.label}));
   }
 
-  setAxes() {
+  initChart() {
     this.x = d3.scaleLinear()
       .domain([0, this.props.chartParams.timeDomain])
       .range([0, this.width]);
+
+    this.svg.append("g")
+      .attr("transform", "translate(0," + this.height + ")")
+      .classed("x-axis", true)
+      .call(d3.axisBottom(this.x).tickFormat(function(d, i) {
+        return d == 0 ? "0s" : d3.format("+.1f")(d)
+      }));
+
+
+    this.svg.append("text")
+      .attr("x", this.width*0.02)
+      .attr("y", -this.height*0.022)
+      .classed("y-unit", true)
+      .text(this.props.chartLabel + ' (' + this.props.unit + ')');
+
+    
+    this.svg.selectAll("g.text-group")
+      .data(this.yVars.map(yVar => ({"label": yVar.label, "color": yVar.color})))
+      .enter()
+      .append("text")
+        .attr("class", "legend-text")
+        .attr("font-size", '0.65em')
+        .attr("dx", (_, i) => 35 + i*15 + "%")
+        .attr("dy", '-2.2%')
+        .style("fill", d => d.color)
+        .text(d => "— " + d.label);
+
+
+    this.sweepingLine = this.svg.append("line")
+      .attr("x1", 0)  
+      .attr("y1", 0)
+      .attr("x2", 0)
+      .attr("y2", this.height)
+      .attr("id", "sweeping-line")
+      .style("stroke-dasharray", "3,3")
+      .style("stroke", "black")
+      .style("fill", "none")
+      .style("opacity", 0.5);
+
+    this.addPlaceholderY();
+  }
+
+  addPlaceholderY() {
+    this.y = d3.scaleLinear()
+      .domain([0, 1])
+      .range([this.height, 0]);
+
+    this.svg.append("g")
+      .classed("placeholder-y-axis", true)
+      .call(d3.axisLeft(this.y).tickFormat("").ticks(6));
+  }
+
+  setAxes() {
+
+    this.svg.select(".placeholder-y-axis").remove();
 
     var yArrays = this.yVars.map(yVar =>
       this.props.soln[yVar.name]);
 
     this.y = d3.scaleLinear()
       .domain(d3.extent(d3.merge(yArrays)))
-      .range([this.height, 0]);
+      .range([this.height, 0])
+      .nice();
+
 
     this.svg.append("g")
-      .attr("transform", "translate(0," + this.height + ")")
-      .classed("x-axis", true)
-      .call(d3.axisBottom(this.x));
+      .classed("y-axis", true)
+      .call(d3.axisLeft(this.y).ticks(6));
 
-    this.svg.append("g")
-      .call(d3.axisLeft(this.y));
-
-      // extra zero line for the flow chart
+    // extra zero line for the flow chart
     if (this.props.chartInfo.id === "flowChart") {
       this.svg.append("line")
         .attr("x1", 0)  
@@ -76,22 +122,38 @@ class Chart extends React.Component {
         .style("fill", "none")
         .style("opacity", 0.2);
     }
+
   }
   
-  // https://reactjs.org/docs/react-component.html#the-component-lifecycle
-  // https://reactjs.org/docs/react-component.html#static-getderivedstatefromprops
-  // https://reactjs.org/blog/2018/06/07/you-probably-dont-need-derived-state.html#what-about-memoization
-  // todo: update logic
   componentDidUpdate() {
-    this.updateChart();
-    
+    switch (this.props.action) {
+      case 'play':
+        this.play()
+        break;
+      case 'reset':
+        this.reset();
+        break;
+      case 'pause':
+        // empty for now as the logic is handled in simulator.js
+        // consider sending the logic back here using setstate
+        break;
+      default:
+        break;
+    }
+  }
+
+  // todo: check whether unnecessary dom elements are retained
+  reset() {
+    this.svg.selectAll("*").transition();
+    this.svg.selectAll("*").remove();
+    this.initChart();
+    this.axesSet = false;
   }
 
   renderChart() {
-    console.log("rendering chart");
     var data = this.formatData();
 
-    this.clip = this.svg.append("clipPath")
+    this.clipRect = this.svg.append("clipPath")
       .attr("id", "clip-" + this.props.idx + "-current")
       .classed("current", true)
       .append("rect")
@@ -99,7 +161,6 @@ class Chart extends React.Component {
       .attr("y", 0)
       .attr("width", 0)
       .attr("height", this.height);
-             // set the y radius
 
     this.svg.append("g")
       .classed("path-group", true)
@@ -130,11 +191,11 @@ class Chart extends React.Component {
           "translate(" + this.x(d.x[0]) + "," + this.y(d.y[0]) + ")")
 
 
+
   }
 
   // make sure i'm not leaving stuff/data that should be removed
-  updateChart() {
-    console.log("updating chart");
+  loopChart() {
     this.svg.selectAll(".previous").remove();
     this.svg.selectAll(".focus-group").remove();
     this.svg.select("#clip-" + this.props.idx + "-current")
@@ -148,30 +209,41 @@ class Chart extends React.Component {
       .classed("current", false)
       .classed("previous", true);
 
-    this.renderChart();
+    this.sweepingLine
+      .attr("x1", 0)  
+      .attr("y1", 0)
+      .attr("x2", 0)
+      .attr("y2", this.height)
+
+    this.svg.select(".x-axis").select("g").select("text").text(this.props.loop * this.timeDomain + "s");
   }
 
-  // https://groups.google.com/g/d3-js/c/WC_7Xi6VV50/m/j1HK0vIWI-EJ
-  // https://d3-wiki.readthedocs.io/zh_CN/master/Transitions/
-  // https://stackoverflow.com/questions/10692100/invoke-a-callback-at-the-end-of-a-transition
-  // perhaps designate a parent transition within simulator
-  play(sharedTransition) {
-    console.log("playing");
+  play() {
+    // clean up the logic here for axes/resuming
+    if (!this.axesSet) {
+      this.setAxes();
+      this.axesSet = true;
+    }
+    if (this.props.pauseTime === 0) {
+      this.loopChart();
+      this.renderChart();
+    }
+
     this.svg.select("#clip-" + this.props.idx + "-previous")
       .select("rect")
-      .transition(sharedTransition)
+      .transition(this.props.transition)
       .attr("width", 0)
       .attr("x", this.width);
 
-    this.clip.transition(sharedTransition)
+    this.clipRect.transition(this.props.transition)
       .attr("width", this.width);
 
-    this.focuses.transition(sharedTransition)
+    this.focuses.transition(this.props.transition)
       .attrTween("transform", d =>
-        function(t) {
+        function(t0) {
+          var t = this.props.pauseTime + t0 * (1-this.props.pauseTime);
           var idxDec = t*(d.x.length-1);
           var idxInt = Math.floor(idxDec);
-
           var leftX = this.x(d.x[idxInt]);
           var rightX = t === 1 ? leftX : this.x(d.x[idxInt+1]);
           var leftY = this.y(d.y[idxInt]);
@@ -183,11 +255,16 @@ class Chart extends React.Component {
         return "translate(" + xTrans + "," + yTrans + ")";
         }.bind(this)
       )
+    
+    this.sweepingLine.transition(this.props.transition)
+        .attr("x1", this.width)
+        .attr("x2", this.width);
+      
   }
 
   render() {
     return (
-      <div id={this.props.chartInfo.id} ref={c => this.container = c} />
+      <Container id={this.props.chartInfo.id} ref={c => this.container = c} />
     );
   }
 }

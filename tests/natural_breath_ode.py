@@ -6,7 +6,7 @@ import pdb
 
 def sinusoidal_breath(t, patient_breath_max_pmus, patient_breath_inspiratory_time):
     if t < patient_breath_inspiratory_time:
-        dpmus = patient_breath_max_pmus * \
+        dpmus = -patient_breath_max_pmus * \
             (np.pi/patient_breath_inspiratory_time) * np.cos(np.pi*t/patient_breath_inspiratory_time)
     else:
         dpmus = 0
@@ -36,7 +36,7 @@ def natural_breathing(y, t, params):
 
     dpalv = dpmus - palv/(R*C_static)
 
-    dflow = dpalv/R
+    dflow = -dpalv/R
 
     dvolume = flow
 
