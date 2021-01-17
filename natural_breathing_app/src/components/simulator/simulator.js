@@ -187,7 +187,7 @@ class Simulator extends React.Component {
             <Forms defaultODEParams={this.props.defaultODEParams} ventilated={this.state.odeParams.ventilated} animationState={this.state.animationState} onParamChange={this.handleParamChange.bind(this)} onReset={this.reset.bind(this)} onPlay={this.play.bind(this)} onPause={this.pause.bind(this)}/>
           </Col>
         </Row>
-        <Navbar bg="dark" variant="dark" style={{height: '2em'}} className="mt-0 pt-0 pb-0">
+        <Navbar bg="dark" variant="dark" style={{height: '2em'}} className="mt-2 pt-0 pb-0">
           <Navbar.Brand style={{'fontSize': '0.75em'}}>
            © Andrew Zhou & Brandon Araki 2021
           </Navbar.Brand>

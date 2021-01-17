@@ -28,7 +28,7 @@ var defaultODEParams = {
   "pbf": 16, // patient breath frequency
   "pbmp": 4, // patient breath max pmus
   "pbit": 1, // patient breath inspiration time
-  "step": 0.0001,
+  "step": 0.01,
   "RR": 20,
   "IE": 3,
   "VT": 200,
@@ -46,12 +46,13 @@ var svgDims = {margin: margin, width: width, height: height};
 
 var defaultChartParams = {
   "timeDomain": 10,
-  "downSample": 100
+  // irrelevant, unless we change our ODE solving method
+  "downSample": 1
 }
 
 var charts = [{id: "volumeChart", chartLabel: 'Volume', unit: 'L', variables: [{"name": "volume", "color": "red", "label": "Volume"}]},
   {id: "flowChart", chartLabel: 'Flow', unit: 'L/s', variables: [{name: "flow", "color": "red", "label": "Flow"}]},
-  {id: "pressureChart", chartLabel: 'Pressure', unit: 'cmH2O', variables: [{"name": "paw", "color": "red", "label": "Paw"}, {"name": "palv", "color": "blue", "label": "Palv"}, {"name": "pmus", "color": "pink", "label": "Pmus"}]}]
+  {id: "pressureChart", chartLabel: 'Pressure', unit: 'cmH2O', variables: [{"name": "paw", "color": "red", "label": "Paw"}, {"name": "palv", "color": "blue", "label": "Palv"}, {"name": "pmus", "color": "green", "label": "Pmus"}]}]
 
 ReactDOM.render(
   <React.StrictMode>
