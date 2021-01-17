@@ -74,20 +74,25 @@ def flow_control(y, t, params):
     flow = float(y[2])
     pmus = float(y[3])
 
-    ot = t
+    # ot = t
 
     patient_breath_t = t % patient_breath_time
 
+    # these derivatives are common to all vent circuits
     dpmus = sinusoidal_breath(patient_breath_t, patient_breath_max_pmus, patient_breath_inspiratory_time)
-    # print(dpmus)
 
     t = t % breath_time
 
+    # inpsiratory phase, when the ventilator is delivering
+    # a set flow to the patient
     if t < insp_time:
         dV = flow
         dflow = flow_function(t, flow, insp_time, const_flow, flow_rise_time)/1000. # L / s
         # print(dflow)
         dPressure = -dpmus + flow/C_static + R*dflow
+    # 'PEEP pause' phase, which only SOME ventilators do,
+    # when they close off flow for a small period of time
+    # to let the pressure settle in the lungs
     elif t < insp_time + hold_time:
         if flow >= 0.:
             dV = flow
@@ -108,6 +113,11 @@ def flow_control(y, t, params):
         dPressure = flow/C_static - dpmus
         # dPressure = -dpmus + (-pressure + peep)/(R*C_static) # (dV - pressure/R)/C
         dflow = (-volume/(R*C_static))/0.02 + dpmus/R
+    # expiratory phase, where the ventilator allows the
+    # patient to PASSIVELY exhale (the ventilator does not
+    # control exhalation in any way in this case, although
+    # there are ventilator control modes that can force
+    # active exhalation I think)
     else:
         dV = flow # (peep - pmus - volume/C_static - pressure)/R # flow # -volume/(R*C) # (pressure - volume/C)/R
         dflow = -flow/((R)*C_static) + dpmus/(R)
@@ -182,7 +192,7 @@ peep = 5.
 R = 20.
 C_dyn = 49.
 C_static = 20.
-hold_time = 0.5
+hold_time = 0.
 frc = 2.0 # functional residual capacity in [L]
 breath_time = 60./RR
 insp_time = 1./(1 + IE) * breath_time
