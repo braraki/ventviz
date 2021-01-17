@@ -29,7 +29,7 @@ class Forms extends React.Component {
   render () { 
     // todo: don't hardcode these
     var patientParams = ["R", "C", "pbf", "pbmp", "pbit"]
-    var ventParams = ["RR", "IE", "VT", "peep", "frt"]
+    var ventParams = ["RR", "insp", "VT", "peep", "frt"]
     
     // todo: thorough cleanup of css (margins/padding in particular)
     return (

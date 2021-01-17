@@ -74,14 +74,15 @@ function runODE(t0, tf, step, y0, params) {
         var patientBreathInspiratoryTime = params["pbit"];
 
         var RR = params["RR"];
-        var IE = params["IE"];
+        // var IE = params["IE"];
+        var inspTime = params['insp']
         var VT = params["VT"];
         var peep = params["peep"];
 
         var flowRiseTime = params['frt'];
 
         var breathTime = 60./RR;
-        var inspTime = 1./(1. + IE) * breathTime;
+        // var inspTime = 1./(1. + IE) * breathTime;
         var constFlow = VT/(inspTime);
 
         return function(t, y) {
